@@ -12,14 +12,22 @@ const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 
 console.log(`Connecting to Redis at: ${redisUrl}...`);
 
-// Create a new Redis client instance. ioredis handles reconnection automatically.
-const redis = new Redis(redisUrl, {
+const redisOptions = {
   maxRetriesPerRequest: 3,
   retryStrategy(times) {
     const delay = Math.min(times * 50, 2000);
     return delay; // Backoff strategy for reconnect attempts
   }
-});
+};
+
+// Enable SSL/TLS option for secured production Redis URLs (e.g. rediss:// on Upstash/Railway)
+if (redisUrl.startsWith('rediss://')) {
+  redisOptions.tls = {
+    rejectUnauthorized: false
+  };
+}
+
+const redis = new Redis(redisUrl, redisOptions);
 
 // Redis connection event listeners
 redis.on('connect', () => {
