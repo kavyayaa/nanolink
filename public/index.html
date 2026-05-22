@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NanoLink | Advanced URL Shortener & Analytics Dashboard</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="A production-ready, lightning-fast URL shortener with comprehensive real-time click tracking, device demographics, and geolocation analytics.">
+  <meta name="keywords" content="url shortener, link shortener, link analytics, express redis shortener, chartjs dashboard">
+  
+  <!-- Google Fonts for premium typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js loaded via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Embedded Vanilla CSS: Modern Glassmorphic UI with dynamic variables -->
+  <style>
+    :root {
+      /* Palette Tokens */
+      --bg-base: #0b0f19;
+      --bg-surface: rgba(17, 24, 39, 0.7);
+      --bg-card: rgba(30, 41, 59, 0.45);
+      --border-light: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.4);
+      
+      --color-primary: #6366f1; /* Indigo */
+      --color-primary-glow: rgba(99, 102, 241, 0.15);
+      --color-secondary: #a855f7; /* Purple */
+      --color-success: #10b981; /* Emerald */
+      --color-warning: #f59e0b; /* Amber */
+      --color-danger: #ef4444; /* Rose */
+      
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-inverse: #ffffff;
+      
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --border-radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.1) 0px, transparent 50%);
+      background-attachment: fixed;
+      font-family: var(--font-body);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    /* Custom Webkit Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-light);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--color-primary);
+    }
+
+    /* Container alignment */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Header styling with brand title gradient */
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInDown 0.6s ease-out;
+    }
+
+    .brand-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      color: var(--text-inverse);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(to right, #ffffff, #c7d2fe, #f3e8ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.025em;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 500px;
+      margin: 0.5rem auto 0 auto;
+    }
+
+    /* Main Grid Layout */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 3rem;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    @media (max-width: 900px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Premium Glassmorphic Card Styling */
+    .glass-card {
+      background: var(--bg-surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius);
+      padding: 2.25rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      transition: var(--transition-smooth);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 0.75rem;
+    }
+
+    /* Form Layouts & Inputs */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    input, select {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    input:focus, select:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-glow);
+      background: rgba(30, 41, 59, 0.6);
+    }
+
+    /* Action Buttons */
+    .btn-gradient {
+      width: 100%;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: var(--text-inverse);
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0.9rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.5);
+      filter: brightness(1.1);
+    }
+
+    .btn-gradient:active {
+      transform: translateY(1px);
+    }
+
+    /* URL Result panel animation and copy options */
+    .result-box {
+      margin-top: 1.5rem;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 10px;
+      padding: 1.25rem;
+      display: none;
+      animation: scaleUp 0.3s ease-out;
+    }
+
+    .result-header {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--color-success);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .result-link-container {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .shortened-url-text {
+      background: rgba(0, 0, 0, 0.25);
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 1rem;
+      flex-grow: 1;
+      overflow-x: auto;
+      white-space: nowrap;
+      border: 1px solid var(--border-light);
+    }
+
+    .btn-copy, .btn-secondary {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .btn-copy:hover {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: var(--text-inverse);
+    }
+
+    .result-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .view-analytics-btn {
+      color: var(--color-secondary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: underline;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      transition: var(--transition-smooth);
+    }
+
+    .view-analytics-btn:hover {
+      color: var(--text-main);
+    }
+
+    /* Error Banner */
+    .error-banner {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #ff8a8a;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 1rem;
+      display: none;
+      animation: shake 0.4s ease-in-out;
+      font-size: 0.9rem;
+    }
+
+    /* ========================================================================
+       ANALYTICS DASHBOARD LAYOUT
+       ======================================================================== */
+    .analytics-section {
+      display: none;
+      margin-top: 2rem;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .analytics-title {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .analytics-title span {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .url-meta-header {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .meta-item {
+      font-size: 0.95rem;
+    }
+
+    .meta-label {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .meta-value {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .meta-value.link {
+      color: var(--color-primary);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .meta-value.link:hover {
+      text-decoration: underline;
+    }
+
+    /* 4 Stat Cards Grid */
+    .stat-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--accent-color, var(--color-primary));
+    }
+
+    .stat-card.indigo { --accent-color: var(--color-primary); }
+    .stat-card.teal { --accent-color: var(--color-success); }
+    .stat-card.purple { --accent-color: var(--color-secondary); }
+    .stat-card.amber { --accent-color: var(--color-warning); }
+
+    .stat-card-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card-value {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-top: auto;
+    }
+
+    /* Chart and Demographics panels split layout */
+    .dashboard-details-grid {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-container {
+      position: relative;
+      height: 320px;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    /* Demographics Breakdown Cards */
+    .demographics-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .demographic-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 1.5rem;
+      flex-grow: 1;
+    }
+
+    .demographic-header {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-main);
+    }
+
+    .demographic-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .demographic-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .demographic-item-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    .demographic-label {
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .demographic-count {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+      border-radius: 3px;
+      width: 0%;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Quick status for empty lists */
+    .empty-analytics-state {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      color: var(--text-muted);
+    }
+
+    .empty-analytics-state svg {
+      stroke: var(--text-muted);
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    /* Keyframe Animations */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes scaleUp {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Branding Header -->
+    <header>
+      <div class="brand-container">
+        <div class="brand-icon">N</div>
+        <h1>NanoLink</h1>
+      </div>
+      <p>Shorten links. Protect clicks. Track device and geography metrics instantly using Redis-backed operations.</p>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <div class="main-grid">
+      
+      <!-- Shortener Card Panel -->
+      <section class="glass-card">
+        <h2 class="card-title">
+          <svg style="width: 20px; height: 20px; fill: var(--color-primary);" viewBox="0 0 24 24">
+            <path d="M10.59 13.41c.41.39.41 1.03 0 1.42-.39.39-1.03.39-1.42 0a5.003 5.003 0 0 1 0-7.07l3.54-3.54a5.003 5.003 0 0 1 7.07 0 5.003 5.003 0 0 1 0 7.07l-1.49 1.49c.01-.82-.12-1.64-.4-2.42l.47-.48a3.008 3.008 0 0 0 0-4.24 3.008 3.008 0 0 0-4.24 0l-3.53 3.53a3.008 3.008 0 0 0 0 4.24m-1.41-1.42A3.008 3.008 0 0 0 7.07 15l3.53-3.53a3.008 3.008 0 0 0 0-4.24l.47-.48c-.28.78-.41 1.6-.4 2.42l-1.49 1.49a5.003 5.003 0 0 1 0-7.07 5.003 5.003 0 0 1 7.07 0l3.54 3.54c1.95 1.95 1.95 5.12 0 7.07l-3.54 3.54c-1.95 1.95-5.12 1.95-7.07 0a5.003 5.003 0 0 1 0-7.07"></path>
+          </svg>
+          Shorten a URL
+        </h2>
+        
+        <form id="shortenForm">
+          <div class="form-group">
+            <label for="originalUrl">Destination URL *</label>
+            <input type="url" id="originalUrl" placeholder="https://example.com/very-long-landing-page" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="customAlias">Custom Alias (Optional)</label>
+            <input type="text" id="customAlias" placeholder="e.g. promo-2026" maxlength="20">
+          </div>
+          
+          <div class="form-group">
+            <label for="expiresIn">Link Expiration</label>
+            <select id="expiresIn">
+              <option value="">Never (Permanent Link)</option>
+              <option value="1">1 Day</option>
+              <option value="7">7 Days</option>
+              <option value="30">30 Days</option>
+            </select>
+          </div>
+          
+          <button type="submit" class="btn-gradient">
+            Shorten Link
+          </button>
+        </form>
+
+        <!-- Dynamic Success alert container -->
+        <div id="resultBox" class="result-box">
+          <div class="result-header">
+            <svg style="width: 16px; height: 16px; fill: var(--color-success);" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+            </svg>
+            Link Shortened Successfully!
+          </div>
+          <div class="result-link-container">
+            <div id="shortenedUrl" class="shortened-url-text">http://localhost:5000/aB3c4d</div>
+            <button id="copyBtn" class="btn-copy">Copy</button>
+          </div>
+          <div class="result-actions">
+            <button id="quickViewAnalytics" class="view-analytics-btn">
+              View Analytics →
+            </button>
+          </div>
+        </div>
+
+        <!-- Error alert message container -->
+        <div id="errorBanner" class="error-banner"></div>
+      </section>
+
+      <!-- Analytics Search Panel -->
+      <section class="glass-card">
+        <h2 class="card-title">
+          <svg style="width: 20px; height: 20px; fill: var(--color-secondary);" viewBox="0 0 24 24">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"></path>
+          </svg>
+          Search Link Analytics
+        </h2>
+        
+        <div class="form-group">
+          <label for="searchCode">Enter Short Code or Custom Alias</label>
+          <input type="text" id="searchCode" placeholder="e.g. 5yUo8a or promo-2026">
+        </div>
+        
+        <button id="searchBtn" class="btn-gradient" style="background: linear-gradient(135deg, var(--color-secondary), #d946ef);">
+          Fetch Analytics Dashboard
+        </button>
+
+        <div id="searchErrorBanner" class="error-banner" style="margin-top: 1.5rem;"></div>
+      </section>
+
+    </div>
+
+    <!-- ========================================================================
+         DASHBOARD DISPLAY WRAPPER
+         ======================================================================== -->
+    <main id="analyticsSection" class="analytics-section">
+      
+      <h2 class="analytics-title">
+        <svg style="width: 24px; height: 24px; fill: var(--color-secondary);" viewBox="0 0 24 24">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"></path>
+        </svg>
+        <span>Link Analytics Dashboard</span>
+      </h2>
+
+      <!-- General URL info header -->
+      <div class="url-meta-header">
+        <div class="meta-item">
+          <div class="meta-label">Original Destination</div>
+          <div><a href="#" id="metaOriginalUrl" class="meta-value link" target="_blank" rel="noopener noreferrer">https://google.com</a></div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Short Code</div>
+          <div id="metaShortCode" class="meta-value">xxxxxx</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Created At</div>
+          <div id="metaCreatedAt" class="meta-value">YYYY-MM-DD</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Link Expiration</div>
+          <div id="metaExpiresAt" class="meta-value">Never</div>
+        </div>
+      </div>
+
+      <!-- 4 Core Stat Cards -->
+      <div class="stat-cards-grid">
+        <div class="stat-card indigo">
+          <div class="stat-card-title">Total Clicks</div>
+          <div id="statClicks" class="stat-card-value">0</div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-card-title">Top Country</div>
+          <div id="statCountry" class="stat-card-value">N/A</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-card-title">Top Device</div>
+          <div id="statDevice" class="stat-card-value">N/A</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-card-title">Top Browser</div>
+          <div id="statBrowser" class="stat-card-value">N/A</div>
+        </div>
+      </div>
+
+      <!-- Chart and Breakdown split layout -->
+      <div class="dashboard-details-grid">
+        
+        <!-- Left Side: Chart.js Canvas -->
+        <div class="glass-card">
+          <h3 class="card-title">
+            <svg style="width: 18px; height: 18px; fill: var(--color-primary);" viewBox="0 0 24 24">
+              <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"></path>
+            </svg>
+            Click Trends (Last 7 Days)
+          </h3>
+          <div class="chart-container">
+            <canvas id="clicksChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Right Side: Demographics breakdown tables -->
+        <div class="demographics-panel">
+          
+          <!-- Geography Breakdown -->
+          <div class="demographic-card">
+            <h3 class="demographic-header">
+              <span>Visitor Locations</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Top Countries</span>
+            </h3>
+            <ul id="countryList" class="demographic-list">
+              <li class="empty-analytics-state">No geographical data recorded yet.</li>
+            </ul>
+          </div>
+
+          <!-- Devices Breakdown -->
+          <div class="demographic-card">
+            <h3 class="demographic-header">
+              <span>Device Distribution</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Mobile vs Desktop</span>
+            </h3>
+            <ul id="deviceList" class="demographic-list">
+              <li class="empty-analytics-state">No device data recorded yet.</li>
+            </ul>
+          </div>
+
+          <!-- Browser Breakdown -->
+          <div class="demographic-card">
+            <h3 class="demographic-header">
+              <span>Browser Performance</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Top Browsers</span>
+            </h3>
+            <ul id="browserList" class="demographic-list">
+              <li class="empty-analytics-state">No browser data recorded yet.</li>
+            </ul>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Vanilla JavaScript Logic -->
+  <script>
+    // Global references
+    let clicksChartInstance = null;
+    let lastShortenedCode = '';
+
+    // DOM Elements
+    const shortenForm = document.getElementById('shortenForm');
+    const originalUrlInput = document.getElementById('originalUrl');
+    const customAliasInput = document.getElementById('customAlias');
+    const expiresInSelect = document.getElementById('expiresIn');
+    
+    const resultBox = document.getElementById('resultBox');
+    const shortenedUrlDiv = document.getElementById('shortenedUrl');
+    const copyBtn = document.getElementById('copyBtn');
+    const errorBanner = document.getElementById('errorBanner');
+    const quickViewAnalyticsBtn = document.getElementById('quickViewAnalytics');
+    
+    const searchCodeInput = document.getElementById('searchCode');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchErrorBanner = document.getElementById('searchErrorBanner');
+    
+    const analyticsSection = document.getElementById('analyticsSection');
+    const metaOriginalUrl = document.getElementById('metaOriginalUrl');
+    const metaShortCode = document.getElementById('metaShortCode');
+    const metaCreatedAt = document.getElementById('metaCreatedAt');
+    const metaExpiresAt = document.getElementById('metaExpiresAt');
+    
+    const statClicks = document.getElementById('statClicks');
+    const statCountry = document.getElementById('statCountry');
+    const statDevice = document.getElementById('statDevice');
+    const statBrowser = document.getElementById('statBrowser');
+    
+    const countryList = document.getElementById('countryList');
+    const deviceList = document.getElementById('deviceList');
+    const browserList = document.getElementById('browserList');
+
+    // API Base URL mapping (resolves dynamically relative to host location)
+    const API_BASE = window.location.origin;
+
+    // --- FORM SHORTEN HANDLER ---
+    shortenForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Clear alert banners
+      errorBanner.style.display = 'none';
+      resultBox.style.display = 'none';
+
+      const payload = {
+        originalUrl: originalUrlInput.value.trim(),
+        customAlias: customAliasInput.value.trim() || null,
+        expiresIn: expiresInSelect.value ? parseInt(expiresInSelect.value, 10) : null
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/shorten`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || data.error || 'Server error occurred during shortening.');
+        }
+
+        // Show successful results panel
+        shortenedUrlDiv.textContent = data.shortUrl;
+        resultBox.style.display = 'block';
+        lastShortenedCode = data.shortCode;
+
+        // Reset input fields
+        customAliasInput.value = '';
+        expiresInSelect.value = '';
+      } catch (err) {
+        showError(errorBanner, err.message);
+      }
+    });
+
+    // --- COPY BUTTON HANDLER ---
+    copyBtn.addEventListener('click', () => {
+      const urlText = shortenedUrlDiv.textContent;
+      navigator.clipboard.writeText(urlText).then(() => {
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = 'Copied!';
+        copyBtn.style.background = 'var(--color-success)';
+        
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+          copyBtn.style.background = '';
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+    });
+
+    // --- QUICK LINK TO ANALYTICS FROM SUCCESS ---
+    quickViewAnalyticsBtn.addEventListener('click', () => {
+      if (lastShortenedCode) {
+        searchCodeInput.value = lastShortenedCode;
+        fetchAnalytics(lastShortenedCode);
+        
+        // Smooth scroll to analytics dashboard
+        setTimeout(() => {
+          analyticsSection.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    });
+
+    // --- ANALYTICS SEARCH ACTION HANDLER ---
+    searchBtn.addEventListener('click', () => {
+      const code = searchCodeInput.value.trim();
+      if (!code) {
+        showError(searchErrorBanner, 'Please enter a short code or custom alias to query.');
+        return;
+      }
+      fetchAnalytics(code);
+    });
+
+    // Bind Enter key press to search action
+    searchCodeInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        searchBtn.click();
+      }
+    });
+
+    // Helper to display error frames cleanly
+    function showError(element, message) {
+      element.textContent = message;
+      element.style.display = 'block';
+      // Trigger subtle vibration animation
+      element.style.animation = 'none';
+      element.offsetHeight; /* trigger reflow */
+      element.style.animation = null;
+    }
+
+    // --- ANALYTICS DATA FETCH & DOM INJECTION ---
+    async function fetchAnalytics(code) {
+      searchErrorBanner.style.display = 'none';
+
+      try {
+        const response = await fetch(`${API_BASE}/analytics/${code}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || data.error || 'Failed to fetch analytics.');
+        }
+
+        renderDashboard(data);
+      } catch (err) {
+        showError(searchErrorBanner, err.message);
+        analyticsSection.style.display = 'none';
+      }
+    }
+
+    // Renders aggregate statistics into the UI
+    function renderDashboard(data) {
+      // 1. Populate URL Metadata
+      metaOriginalUrl.href = data.originalUrl;
+      metaOriginalUrl.textContent = data.originalUrl;
+      metaShortCode.textContent = data.shortCode;
+      
+      const createdDate = new Date(data.createdAt);
+      metaCreatedAt.textContent = createdDate.toLocaleString();
+      
+      metaExpiresAt.textContent = data.expiresAt 
+        ? new Date(data.expiresAt).toLocaleString() 
+        : 'Never (Permanent Link)';
+
+      // 2. Set 4 Metric cards values
+      statClicks.textContent = data.totalClicks.toLocaleString();
+      
+      const topCountry = data.analytics.topCountries[0]?.country || 'N/A';
+      statCountry.textContent = topCountry;
+      
+      const topDevice = data.analytics.deviceBreakdown[0]?.device || 'N/A';
+      statDevice.textContent = topDevice;
+      
+      const topBrowser = data.analytics.topBrowsers[0]?.browser || 'N/A';
+      statBrowser.textContent = topBrowser;
+
+      // 3. Inject breakdown list metrics (progress bars calculation)
+      populateDemographicList(countryList, data.analytics.topCountries, 'country', data.totalClicks);
+      populateDemographicList(deviceList, data.analytics.deviceBreakdown, 'device', data.totalClicks);
+      populateDemographicList(browserList, data.analytics.topBrowsers, 'browser', data.totalClicks);
+
+      // 4. Render Chart.js
+      renderClicksChart(data.analytics.clicksPerDay);
+
+      // Make the dashboard container visible
+      analyticsSection.style.display = 'block';
+    }
+
+    // Standard list builder parsing ratios and writing DOM elements
+    function populateDemographicList(listElement, itemsArray, typeLabel, totalClicks) {
+      listElement.innerHTML = '';
+      
+      if (!itemsArray || itemsArray.length === 0) {
+        listElement.innerHTML = '<li class="empty-analytics-state">No visitor data recorded.</li>';
+        return;
+      }
+
+      itemsArray.forEach(item => {
+        const valueName = item[typeLabel];
+        const count = item.count;
+        // Handle division by zero safe check
+        const percentage = totalClicks > 0 ? Math.round((count / totalClicks) * 100) : 0;
+
+        const li = document.createElement('li');
+        li.className = 'demographic-item';
+        li.innerHTML = `
+          <div class="demographic-item-info">
+            <span class="demographic-label">${valueName}</span>
+            <span class="demographic-count">${count.toLocaleString()} (${percentage}%)</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: 0%"></div>
+          </div>
+        `;
+        listElement.appendChild(li);
+
+        // Smoothly animate progress fills inside next paint cycle
+        setTimeout(() => {
+          const fill = li.querySelector('.progress-bar-fill');
+          if (fill) fill.style.width = `${percentage}%`;
+        }, 100);
+      });
+    }
+
+    // --- CHART.JS GRAPH LIFECYCLE MANAGEMENT ---
+    // Why destroy prior instances?
+    // Chart.js binds drawing elements to canvas nodes. If we attempt to redraw a new dataset over an active canvas,
+    // the previous data overlaps, causing strange visual glitches (ghosting) when hovering or resizing.
+    // Cleanly destroying prior instances releases browser memory and creates fresh renders.
+    function renderClicksChart(clicksArray) {
+      const ctx = document.getElementById('clicksChart').getContext('2d');
+
+      // Extract labels (Dates) and values (Counts)
+      const labels = clicksArray.map(item => {
+        // Format date string nicely for readability: e.g. "May 22"
+        const d = new Date(item.date);
+        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' });
+      });
+      const dataValues = clicksArray.map(item => item.count);
+
+      // Destroy old chart cleanly
+      if (clicksChartInstance) {
+        clicksChartInstance.destroy();
+      }
+
+      // Initialize fresh Chart.js canvas graph
+      clicksChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Clicks',
+            data: dataValues,
+            backgroundColor: 'rgba(99, 102, 241, 0.4)',
+            borderColor: '#6366f1',
+            borderWidth: 2,
+            borderRadius: 6,
+            hoverBackgroundColor: 'rgba(168, 85, 247, 0.5)',
+            hoverBorderColor: '#a855f7',
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false // Suppress legends for cleaner minimal visual feel
+            },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleFont: { family: 'Outfit', size: 13 },
+              bodyFont: { family: 'Inter', size: 12 },
+              padding: 10,
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderWidth: 1
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: '#9ca3af',
+                font: { family: 'Inter', size: 11 },
+                stepSize: 1
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              }
+            },
+            x: {
+              ticks: {
+                color: '#9ca3af',
+                font: { family: 'Inter', size: 11 }
+              },
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
