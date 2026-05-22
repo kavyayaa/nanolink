@@ -1,56 +1,57 @@
-# NanoLink
+# NanoLink 🚀
 
 NanoLink is a production-ready URL shortener and analytics platform built using Node.js, Express.js, MongoDB, Redis, and Chart.js.
 
-It allows users to generate short URLs, track traffic analytics, monitor clicks, and visualize usage trends through an interactive dashboard.
+It provides fast URL shortening, real-time analytics, caching, rate limiting, and a modern dashboard UI.
 
 ---
 
-# Features
+## 🌐 Live Demo
 
-* URL shortening with custom aliases
-* Redis-based caching for fast redirects
-* Redis-powered rate limiting
-* MongoDB analytics aggregation
-* Asynchronous click tracking
-* Device, browser, and country analytics
-* Clicks-per-day charts using Chart.js
-* Expiring links support
-* Collision-safe Base62 short code generation
-* Mobile-responsive glassmorphic UI
+[https://nanolink-74tm.onrender.com](https://nanolink-74tm.onrender.com)
 
 ---
 
-# Tech Stack
+## ✨ Features
 
-## Backend
+* 🔗 URL shortening with optional custom aliases
+* ⚡ Redis caching for ultra-fast redirects
+* 🚦 Rate limiting (10 requests/hour per IP)
+* 📊 Analytics dashboard with charts
+* 📍 Click tracking (country, device, browser)
+* ⏳ Expiring links support
+* 🔐 Collision-safe Base62 short codes
+* 📱 Mobile-responsive UI
+
+---
+
+## 🧠 Tech Stack
+
+### Backend
 
 * Node.js
 * Express.js
 * MongoDB + Mongoose
-* Redis + ioredis
+* Redis (ioredis)
 
-## Frontend
+### Frontend
 
 * HTML
 * CSS
 * Vanilla JavaScript
 * Chart.js
 
-## Packages
+### Libraries
 
-* express
-* mongoose
-* ioredis
-* dotenv
 * nanoid
 * ua-parser-js
 * geoip-lite
 * cors
+* dotenv
 
 ---
 
-# Folder Structure
+## 📁 Folder Structure
 
 ```bash
 url-shortener/
@@ -75,67 +76,46 @@ url-shortener/
 
 ---
 
-# Installation
+## ⚙️ Environment Variables
 
-## Clone Repository
+Create a `.env` file:
 
-```bash
-git clone <your-github-repo-url>
-cd url-shortener
+```env
+PORT=10000
+
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/nanolink
+
+REDIS_URL=rediss://default:<password>@<endpoint>.upstash.io:6379
+
+BASE_URL=https://nanolink-74tm.onrender.com
 ```
 
-## Install Dependencies
+---
+
+## ▶️ Running Locally
 
 ```bash
 npm install
-```
-
----
-
-# Environment Variables
-
-Create a `.env` file in the root directory.
-
-```env
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/url_shortener
-REDIS_URL=redis://localhost:6379
-BASE_URL=http://localhost:5000
-```
-
----
-
-# Running the Project
-
-## Start MongoDB
-
-Make sure MongoDB is running locally.
-
-## Start Redis
-
-Make sure Redis server is running locally.
-
-## Start Server
-
-```bash
 node server.js
 ```
 
-or using nodemon:
+Visit:
 
-```bash
-npx nodemon server.js
+```
+http://localhost:10000
 ```
 
 ---
 
-# API Endpoints
+## 🔌 API Endpoints
 
-## Create Short URL
+### Create Short URL
 
-### POST `/shorten`
+```
+POST /shorten
+```
 
-Request Body:
+Body:
 
 ```json
 {
@@ -147,88 +127,86 @@ Request Body:
 
 ---
 
-## Redirect URL
+### Redirect
 
-### GET `/:code`
-
-Example:
-
-```bash
-http://localhost:5000/abc123
 ```
-
-Redirects user to the original URL.
+GET /:code
+```
 
 ---
 
-## Analytics Endpoint
+### Analytics
 
-### GET `/analytics/:code`
+```
+GET /analytics/:code
+```
 
 Returns:
 
-* Total clicks
-* Clicks per day
-* Top countries
-* Device breakdown
-* Browser breakdown
+* total clicks
+* clicks per day
+* top countries
+* browsers
+* devices
 
 ---
 
-# Analytics Tracked
+## 📊 Analytics System
 
 NanoLink tracks:
 
 * Total clicks
-* Visitor countries
-* Browser usage
+* Countries
 * Device types
-* Referrer information
-* Daily traffic trends
+* Browsers
+* Referrers
+* Daily click trends
 
 ---
 
-# Redis Usage
+## ⚡ Redis Usage
 
-Redis is used for:
-
-* High-speed URL caching
-* Rate limiting
-* Reducing MongoDB read traffic
+* URL caching for fast redirects
+* Rate limiting per IP
+* Reduces MongoDB load
 
 ---
 
-# Security Features
+## 🔐 Security Features
 
-* URL validation using `new URL()`
-* HTTP/HTTPS protocol filtering
-* Reserved custom alias protection
-* Rate limiting (10 requests/hour)
+* URL validation using native URL API
+* HTTPS/HTTP filtering
+* Reserved alias protection
+* Rate limiting middleware
 * Collision-safe short code generation
 
 ---
 
-# Future Improvements
+## 🚀 Deployment
 
-* User authentication
+* Frontend + Backend: Render
+* Database: MongoDB Atlas
+* Cache: Upstash Redis
+
+---
+
+## 🛣️ Future Improvements
+
+* JWT Authentication
 * QR code generation
 * Password-protected links
-* Custom analytics date ranges
-* Docker deployment
+* Custom analytics date range
+* Docker support
 * Kubernetes scaling
 
 ---
 
-# Deployment
+## 👨‍💻 Author
 
-Recommended deployment stack:
-
-* Render / Railway
-* MongoDB Atlas
-* Upstash Redis
+Built by Kavya
 
 ---
 
-# Author
+## 🟢 Status
 
-Built by Kavya.
+Live & Production Ready 🚀
